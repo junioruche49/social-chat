@@ -37,17 +37,3 @@ jobs:
           name: production-files
           path: build/
 
-  deploy:
-    needs: build-and-test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download Build Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: production-files
-          path: build/
-
-      # Insert your provider's deployment step below (e.g., AWS, Vercel, Netlify)
-      - name: Deploy to Hosting
-        run: echo "Deploying build/ folder to your hosting provider..."

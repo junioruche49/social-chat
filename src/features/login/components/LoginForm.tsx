@@ -3,13 +3,25 @@ import { Controller, type SubmitHandler, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
 import type { z } from "zod";
 
+import { useLogin } from "@/features/login/mutations/useLogin";
+import useToast from "@/shared/hooks/useToast";
+import type { User } from "@/shared/types/user";
+import useAuthStore from "@/stores/useAuthStore";
 import Button from "../../../shared/components/ui/Button";
 import CustomInput from "../../../shared/components/ui/CustomInput";
 import Text from "../../../shared/components/ui/Text";
 import { loginSchema } from "../schemas/loginSchema";
 
+export type loginCredentails = {
+	email: string;
+	password: string;
+};
+
 export default function LoginForm() {
 	const navigation = useNavigate();
+	const { mutate: loginUser, isPending } = useLogin();
+	const { showSuccess, showError } = useToast();
+	const { login: loginAuthStore } = useAuthStore();
 	type LoginSchemaData = z.infer<typeof loginSchema>;
 	const {
 		handleSubmit,
@@ -23,12 +35,36 @@ export default function LoginForm() {
 		},
 	});
 	const onSubmit: SubmitHandler<LoginSchemaData> = (data) => {
-		console.log(data);
-		navigation("/");
+		const newLogin: loginCredentails = {
+			email: data.email,
+			password: data.password,
+		};
+		loginUser(newLogin, {
+			onSuccess: (data) => {
+				showSuccess("Login successful!");
+				const res = data as {
+					data: { user: User; accessToken: string; refreshToken: string };
+				};
+				loginAuthStore(
+					res.data?.user,
+					res.data?.accessToken,
+					res.data?.refreshToken,
+				);
+				navigation("/dashboard", { replace: true });
+			},
+			onError: (error: unknown) => {
+				const errorMessage =
+					typeof error === "object" && error !== null && "response" in error
+						? (error as { response?: { data?: { detail?: string } } }).response
+								?.data?.detail
+						: undefined;
+				showError(errorMessage || "An error occurred during login.");
+			},
+		});
 	};
 
 	return (
-		<div className="flex flex-col gap-4">
+		<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
 			<Controller
 				name="email"
 				control={control}
@@ -69,8 +105,8 @@ export default function LoginForm() {
 				)}
 			/>
 			<div>
-				<Button onClick={handleSubmit(onSubmit)} name="submit" type="submit">
-					Log In
+				<Button disabled={isPending} name="submit" type="submit">
+					{isPending ? "Logging in..." : "Log In"}
 				</Button>
 			</div>
 			<div className="flex flex-row w-full justify-center gap-1 items-center">
@@ -81,6 +117,6 @@ export default function LoginForm() {
 					Sign up
 				</Link>
 			</div>
-		</div>
+		</form>
 	);
 }

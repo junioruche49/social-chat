@@ -11,14 +11,14 @@ function App() {
 	return (
 		<BrowserRouter>
 			<Routes>
-				<Route path="/" element={<DashboardLayout />}>
-					<Route index element={<Dashboard />} />
-					<Route path="chat/:userid" element={<Chat />} />
-					<Route path="discover-friends" element={<DiscoverFriends />} />
-				</Route>
 				<Route path="/signup" element={<Signup />} />
 				<Route path="/login" element={<Login />} />
 				<Route path="*" element={<NotFound />} />
+				<Route element={<DashboardLayout />}>
+					<Route path="/dashboard" element={<Dashboard />} />
+					<Route path="/chat/:userid" element={<Chat />} />
+					<Route path="/discover-friends" element={<DiscoverFriends />} />
+				</Route>
 			</Routes>
 		</BrowserRouter>
 	);

@@ -24,7 +24,7 @@ export default function DiscoverFriendsHeader() {
 			</div>
 			<div className="flex flex-row flex-1 w-full gap-1 justify-end">
 				<Link
-					to="/"
+					to="/dashboard"
 					className="bg-brand-secondary-100 h-7 w-7 p-2 flex items-center justify-center rounded-full"
 				>
 					<FontAwesomeIcon

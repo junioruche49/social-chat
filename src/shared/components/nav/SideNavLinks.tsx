@@ -1,28 +1,33 @@
 import { Link } from "react-router-dom";
+import { useGetFriends } from "@/shared/queries/useGetFriends";
+import useAuthStore from "@/store/useAuthStore";
 import Avatar from "../ui/Avatar";
+import Loading from "../ui/Loading";
 import Text from "../ui/Text";
 
-const links = [
-	{ id: 121212, name: "john doe", message: "hello", date: "Just now" },
-	{
-		id: 232434,
-		name: "uche eberechukwu",
-		message: "uche eberechukwu",
-		date: "Yesterday",
-	},
-];
-
 export default function SideNavLinks() {
+	const { data: friendsList, isLoading, isError } = useGetFriends();
+	const user = useAuthStore((state) => state.user);
+	const friends = friendsList?.map((friend) => {
+		if (friend.receiverId === user?.id) return friend.sender;
+		else return friend.receiver;
+	});
+	if (isLoading) {
+		return <Loading />;
+	}
+	if (isError) {
+		return <div>Error: {isError}</div>;
+	}
 	return (
 		<nav>
-			{links.map((link) => (
+			{friends?.map((friend) => (
 				<Link
-					key={link.id}
-					to={`/${link.id}`}
+					key={friend.id}
+					to={`/chat/${friend.id}`}
 					className="flex flex-row items-center p-3  border-b border-brand-secondary-500"
 				>
 					<Avatar
-						initials={link.name[0].toUpperCase()}
+						initials={friend.lastName[0].toUpperCase()}
 						size="md"
 						className="p-2"
 					/>
@@ -32,19 +37,19 @@ export default function SideNavLinks() {
 							tone="none"
 							className="font-bold text-black text-xs  mr-3"
 						>
-							{link.name}
+							{friend.firstName} {friend.lastName}
 						</Text>
-						<Text
+						{/* <Text
 							type="h6"
 							tone="secondary"
 							className="font-normal text-xs mr-3"
 						>
 							{link.message}
-						</Text>
+						</Text> */}
 					</div>
 					<div className="flex flex-row flex-1 w-full gap-1 justify-end">
 						<Text type="p" tone="secondary" className="text-xs">
-							{link.date}
+							{friend.updatedAt}
 						</Text>
 					</div>
 				</Link>

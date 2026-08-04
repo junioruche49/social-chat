@@ -5,7 +5,7 @@ import type { z } from "zod";
 
 import useToast from "@/shared/hooks/useToast";
 import type { User } from "@/shared/types/user";
-import useAuthStore from "@/stores/useAuthStore";
+import useAuthStore from "@/store/useAuthStore";
 import Button from "../../../shared/components/ui/Button";
 import CustomInput from "../../../shared/components/ui/CustomInput";
 import Text from "../../../shared/components/ui/Text";

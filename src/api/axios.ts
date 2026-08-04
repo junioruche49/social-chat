@@ -1,5 +1,5 @@
 import axios from "axios";
-import useAuthStore from "@/stores/useAuthStore";
+import useAuthStore from "@/store/useAuthStore";
 import { refreshToken } from "./fetchApi";
 
 export default axios.create({

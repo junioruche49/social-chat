@@ -1,9 +1,14 @@
 import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import type { User } from "@/shared/types/user";
 import Avatar from "../../../shared/components/ui/Avatar";
 import Text from "../../../shared/components/ui/Text";
 
-export default function ChatHeader() {
+type Props = {
+	user: User | undefined;
+};
+
+export default function ChatHeader({ user }: Props) {
 	return (
 		<div className="flex flex-row w-full items-center p-3  border-b border-brand-secondary-500 ">
 			<Avatar initials="U" className="p-3" size="sm" />
@@ -13,7 +18,7 @@ export default function ChatHeader() {
 					tone="none"
 					className="font-extrabold text-black text-sm ml-2 mr-3"
 				>
-					Alice Smith
+					{user?.lastName} {user?.firstName}
 				</Text>
 				<Text
 					type="h6"

@@ -1,15 +1,45 @@
 import { faPlus, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import Text from "../../../shared/components/ui/Text";
-
-const friends = [
-	{ name: "Charlie Davis", username: "@charlie_d", mutualFriends: "4" },
-	{ name: "Diana Prince", username: "@diana_p", mutualFriends: "1" },
-	{ name: "Evan Wright", username: "@evan_dev", mutualFriends: "0" },
-	{ name: "Fiona Gallagher", username: "@fiona_g", mutualFriends: "8" },
-];
+import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useSendRequest } from "@/features/discover-friends/mutations/useSendRequest";
+import { useGetDiscoverPeople } from "@/features/discover-friends/queries/useGetDiscoverPeople";
+import Loading from "@/shared/components/ui/Loading";
+import Text from "@/shared/components/ui/Text";
+import useToast from "@/shared/hooks/useToast";
+import type { User } from "@/shared/types/user";
 
 export default function DiscoverFriendsBody() {
+	const queryClient = useQueryClient();
+
+	const { data: friendsList, isLoading, isError } = useGetDiscoverPeople();
+	const { mutate: sendRequest } = useSendRequest();
+	const { showError, showSuccess } = useToast();
+	const [loading, setLoading] = useState(false);
+
+	if (isLoading || loading) {
+		return <Loading />;
+	}
+	if (isError) {
+		return <div>Error: {isError}</div>;
+	}
+
+	const onSendRequest = (receiverId: string) => {
+		sendRequest(receiverId, {
+			onSuccess: onSaveSuccess,
+			onError: onSaveError,
+		});
+	};
+	const onSaveSuccess = () => {
+		setLoading(false);
+		queryClient.invalidateQueries({ queryKey: ["discover-people"] });
+		showSuccess("Request sent successfully!");
+	};
+
+	const onSaveError = () => {
+		setLoading(false);
+		showError("Error sending request!");
+	};
 	return (
 		<div className="p-6 overflow-y-auto flex-1 w-full">
 			<div className="relative mb-8 max-w-2xl mx-auto">
@@ -37,22 +67,24 @@ export default function DiscoverFriendsBody() {
 					id="suggested-friends-list"
 					className="grid grid-cols-1 md:grid-cols-2 gap-4"
 				>
-					{friends.map((friend) => (
+					{friendsList?.map((friend: User) => (
 						<div
-							key={friend.name}
+							key={friend.firstName}
 							className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between hover:shadow-md transition"
 						>
 							<div className="flex items-center gap-3">
 								<div className="w-12 h-12 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center font-bold text-lg">
-									{friend.name[0].toUpperCase()}
+									{friend.lastName[0].toUpperCase()}
 								</div>
 								<div>
 									<h4 className="font-bold text-slate-800 text-sm">
-										{friend.name}
+										{friend.firstName} {friend.lastName}
 									</h4>
-									<p className="text-xs text-slate-500">@charlie_d</p>
+									<p className="text-xs text-slate-500 wrap-anywhere">
+										{friend.email}
+									</p>
 									<p className="text-[11px] text-slate-400 mt-0.5">
-										{friend.mutualFriends} mutual friends
+										0 mutual friends
 									</p>
 								</div>
 							</div>
@@ -60,6 +92,7 @@ export default function DiscoverFriendsBody() {
 								type="button"
 								className="bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white px-4 py-2 rounded-lg 
                                 text-sm font-semibold  flex flex-row  relative justify-between  items-center"
+								onClick={() => onSendRequest(friend.id as string)}
 							>
 								<FontAwesomeIcon
 									icon={faPlus}
